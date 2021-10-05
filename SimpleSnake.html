@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Snake</title>
+<style>
+    html {
+        text-align: center;
+        font-family: Arial;
+    }
+
+    #board {
+        width: calc(26 * 24px);
+        margin: auto;
+    }
+
+    #board div {
+        background-color: green;
+        border: 1px solid lightgreen;
+        box-sizing: border-box;
+        float: left;
+        width: 24px;
+        height: 24px;
+    }
+
+    #board .snake {
+        background-color: black;
+    }
+
+    #board .apple {
+        background-color: red;
+    }
+</style>
+</head>
+<body onload="initGame()" onkeydown="enterKey(event)">
+    <h1>Simple Snake</h1>
+    <h2 id="score">Score = 0</h2>
+    <div id="board"></div>
+
+    <script>
+    const board = [];
+    const boardWidth = 26, boardHeight = 16;
+
+    var snakeX;
+    var snakeY;
+    var snakeLength;
+    var snakeDirection;
+    var nApples;
+    var nApplesHi = 0;
+
+    const EMPTY = 0;
+    const APPLE = -1;
+
+    function initGame() {
+        const boardElement = document.getElementById('board');
+
+        for (var y = 0; y < boardHeight; ++y) {
+            var row = [];
+            for (var x = 0; x < boardWidth; ++x) {
+                var cell = {};
+                cell.element = document.createElement('div');   
+                boardElement.appendChild(cell.element);
+                row.push(cell);
+            }
+            board.push(row);
+        }
+
+        startGame();
+        gameLoop();
+    }
+
+    function isBoardFull() {
+        for (var y = 0; y < boardHeight; ++y) {
+            for (var x = 0; x < boardWidth; ++x) {
+                if (board[y][x].content == EMPTY)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    function updateScore() {
+        document.getElementById("score").innerHTML =
+            "Score = " + nApples + "/" + nApplesHi;
+    }
+
+    function placeApple() {
+        while (true) {
+            var x = Math.floor(Math.random() * boardWidth);
+            var y = Math.floor(Math.random() * boardHeight);
+            if (board[y][x].content == EMPTY) {
+                board[y][x].content = APPLE;
+                return;
+            }
+        }
+    }
+
+    function startGame() {                 
+        snakeX = Math.floor(boardWidth / 2);     
+        snakeY = Math.floor(boardHeight / 2);    
+        snakeLength = 5;                         
+        snakeDirection = 'Up';                   
+        nApples = 0;
+
+        for (var y = 0; y < boardHeight; ++y) {
+            for (var x = 0; x < boardWidth; ++x) {
+                board[y][x].content = EMPTY;
+            }
+        }
+
+        board[snakeY][snakeX].content = snakeLength;
+        placeApple();
+        updateScore();
+    }
+
+    function gameLoop() {
+        
+        switch (snakeDirection) {
+            case 'Up':    snakeY--; break;
+            case 'Down':  snakeY++; break;
+            case 'Left':  snakeX--; break;
+            case 'Right': snakeX++; break;
+        }
+
+        if (snakeX < 0
+            || snakeY < 0
+            || snakeX >= boardWidth
+            || snakeY >= boardHeight) {
+            startGame();
+        } else {
+            var cell = board[snakeY][snakeX];
+            switch (cell.content) {
+            case EMPTY:
+                board[snakeY][snakeX].content = snakeLength;
+                break;
+            case APPLE:
+                snakeLength++;
+                nApples++;
+                if (nApples > nApplesHi){
+                    nApplesHi = nApples;
+                }
+                updateScore();
+                board[snakeY][snakeX].content = snakeLength;
+                placeApple();
+                break;
+            default:
+                startGame();
+                break;
+            }
+        }
+
+        for (var y = 0; y < boardHeight; ++y) {
+            for (var x = 0; x < boardWidth; ++x) {
+                var cell = board[y][x];
+                switch (cell.content) {
+                case EMPTY:
+                    cell.element.className = '';
+                    break;
+                case APPLE:
+                    cell.element.className = 'apple';
+                    break;
+                default:
+                    cell.element.className = 'snake';
+                    cell.content -= 1;
+                    break;
+                }
+            }
+        }
+
+        setTimeout(gameLoop, 200);
+        //  (1000 / snakeLength)
+    }
+
+    function enterKey(event) {
+        switch (event.key) {
+            case 'ArrowUp': snakeDirection = 'Up'; break;
+            case 'ArrowDown': snakeDirection = 'Down'; break;
+            case 'ArrowLeft': snakeDirection = 'Left'; break;
+            case 'ArrowRight': snakeDirection = 'Right'; break;
+            default: break;
+        }
+
+        event.preventDefault();
+    }
+
+    </script>
+  </body>
+</html>
